@@ -1,4 +1,4 @@
-ChanHaRi Extension
+HongHaChan SNS Crawling Using Chrome webdriver Selenium
 
 [Install]
 - Anaconda 4.0.4 (Python 3.5)
