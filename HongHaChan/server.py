@@ -307,6 +307,7 @@ commandFunc = {
     "FOR": onFor
 }
 
+
 def runTask(args):
     try:
         print(args[0])
@@ -480,7 +481,18 @@ def runInstagram(args):
         f = open(downloaded_image, "wb")
         f.write(inputData)
 
+def runFacebook(args):
+    return 0;
 
+def runTwitter(args):
+    return 0;
+
+
+typeSNS = {
+    0 : runInstagram,
+    1 : runFacebook,
+    2 : runTwitter
+}
 
 @app.route('/_analysis_json', methods=['GET', 'OPTIONS', 'POST'])
 @cross_origin()
@@ -495,14 +507,25 @@ def analysis_json():
     ###receive ajax json
     # else:
     # data = request.get_json(force=True)
+
+    # TODO JSON 받아오기
     try:
         data = request.get_json(force=True)
         print(data)
+        isSNS = data["isSNS"]
         curTaskId = data["taskId"]
-        curActions = data["actions"]
-        curDate = data["scheduleDate"]    # 'scheduleDate' 부분추가
-        curTaskIsSchedule = data["isSchedule"]
-        curLoopCount = data["loopCount"]
+
+        if(isSNS == 1): #SNS
+            targetSNS = data["targetSNS"]
+            tags = data["tags"]
+            formatCount = data["format"]["count"]
+            formatType = data["format"]["type"]
+
+        else: #Custom
+            curActions = data["actions"]
+            curDate = data["scheduleDate"]    # 'scheduleDate' 부분추가
+            curTaskIsSchedule = data["isSchedule"]
+            curLoopCount = data["loopCount"]
 
     except:
         return jsonify(resultCode=1)
@@ -512,34 +535,32 @@ def analysis_json():
     with open('data'+str(curTaskId)+'.json', 'w') as f:
         json.dump(data, f) #저정된 데이터는 다른 python 에서 실행이된다.
 
-    print(curTaskIsSchedule)
-    print("22222222")
-    # TODO Date 파싱
-    #curDate 파싱해야한다.
+    # TODO Thread 처리
+    if (isSNS == 1):  #SNS
+        for item in targetSNS:
+            if(item == 1):
+                taskThread = Thread(name=curTaskId, target=typeSNS.get(targetSNS.index(item)), args=[data])
+                taskThreadList.append(taskThread)
+                taskThread.start()
 
-    print(type(curTaskIsSchedule))
-    if (curTaskIsSchedule == str(1)):
-        try:
-            print("Schedule Run")
-            print(curDate)
-            parsedDate = dateutil.parser.parse(curDate) #파싱된 datetime obj
-            print(parsedDate)
-            print(parsedDate.hour)
-            print(parsedDate.minute)
-            scheduleTime = str(parsedDate.hour) + ":" + str(parsedDate.minute)
-            print(scheduleTime)
-            schedule.every().day.at(scheduleTime).do(runTask,[data])
-        except:
-            print("schedule except")
-            return jsonify(resultCode=0, taskId=curTaskId)
+    else:   #Custom
+        if (curTaskIsSchedule == str(1)):
+            try:
+                print("Schedule Run")
+                parsedDate = dateutil.parser.parse(curDate) #파싱된 datetime obj
+                scheduleTime = str(parsedDate.hour) + ":" + str(parsedDate.minute)
+                schedule.every().day.at(scheduleTime).do(runTask,[data])
+            except:
+                print("schedule except")
+                return jsonify(resultCode=0, taskId=curTaskId)
 
-    else:
-        print("Immediately Run")
-        #taskThread = Thread(name=curTaskId, target=runTask, args=[data])
+        else:
+            print("Immediately Run")
+            taskThread = Thread(name=curTaskId, target=runTask, args=[data])
 
-        taskThread = Thread(name=curTaskId, target=runInstagram, args=[data])
-        taskThreadList.append(taskThread)
-        taskThread.start()
+
+            taskThreadList.append(taskThread)
+            taskThread.start()
 
 
 
