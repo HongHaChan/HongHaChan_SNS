@@ -17,6 +17,8 @@ from threading import Thread, Lock
 import threading
 import dateutil.parser
 import schedule
+import urllib
+from urllib.request import urlopen
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -438,6 +440,48 @@ def runTask(args):
         except:
             return jsonify(resultCode=1)
 
+def runInstagram(args):
+    if os.name == "posix":  # OS가 Unix계열일 경우 (MacOS 포함)
+        driver = webdriver.Chrome(os.getcwd() + "/chromedriver")
+    else:  # OS가 windows일 경우
+        driver = webdriver.Chrome("chromedriver.exe")
+    time.sleep(3)
+    driver.maximize_window()
+    driver.get("http://www.instagram.com")
+    waitForElement(driver,"//section/main/article/div[2]/div[2]/p/a")
+    driver.find_element_by_xpath("//section/main/article/div[2]/div[2]/p/a").click()
+    waitForElement(driver,"//*[@id='react-root']/section/main/article/div[2]/div[1]/div/form/div[1]/input")
+    driver.find_element_by_xpath("//*[@id='react-root']/section/main/article/div[2]/div[1]/div/form/div[1]/input").send_keys("HongHaChan")
+    waitForElement(driver,"//*[@id='react-root']/section/main/article/div[2]/div[1]/div/form/div[2]/input")
+    driver.find_element_by_xpath("//*[@id='react-root']/section/main/article/div[2]/div[1]/div/form/div[2]/input").send_keys("1379555")
+    waitForElement(driver,"//*[@id='react-root']/section/main/article/div[2]/div[1]/div/form/span/button")
+    driver.find_element_by_xpath("//*[@id='react-root']/section/main/article/div[2]/div[1]/div/form/span/button").click()
+    waitForElement(driver,"//*[@id='react-root']/section/nav/div/div/div/div[2]/input")
+    driver.find_element_by_xpath("//*[@id='react-root']/section/nav/div/div/div/div[2]/input").send_keys("#나이키")
+    time.sleep(1)
+    driver.find_element_by_xpath("//*[@id='react-root']/section/nav/div/div/div/div[2]/input").send_keys(Keys.RETURN)
+    time.sleep(2)
+    waitForElement(driver, "//*[@id='react-root']/section/main/article/div[2]/div[3]/a")
+    driver.find_element_by_xpath("//*[@id='react-root']/section/main/article/div[2]/div[3]/a").click()
+    time.sleep(2)
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(2)
+
+    elements = []
+    elements = driver.find_elements_by_class_name("_jjzlb")
+    print(elements)
+    print(len(elements))
+
+    for ele in elements:
+        img_url = ele.find_element_by_xpath(".//*").get_attribute('src')
+        inputData = urlopen(img_url).read()
+
+        downloaded_image = "NIKE" + str(elements.index(ele)) +".jpg"
+        f = open(downloaded_image, "wb")
+        f.write(inputData)
+
+
+
 @app.route('/_analysis_json', methods=['GET', 'OPTIONS', 'POST'])
 @cross_origin()
 def analysis_json():
@@ -491,7 +535,9 @@ def analysis_json():
 
     else:
         print("Immediately Run")
-        taskThread = Thread(name=curTaskId, target=runTask, args=[data])
+        #taskThread = Thread(name=curTaskId, target=runTask, args=[data])
+
+        taskThread = Thread(name=curTaskId, target=runInstagram, args=[data])
         taskThreadList.append(taskThread)
         taskThread.start()
 
