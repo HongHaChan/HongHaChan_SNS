@@ -19,6 +19,7 @@ import dateutil.parser
 import schedule
 import urllib
 from urllib.request import urlopen
+import codecs
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -442,13 +443,21 @@ def runTask(args):
             return jsonify(resultCode=1)
 
 def runInstagram(args):
+
+    tags = args["tags"]
+    formatCount = args["format"]["count"]
+    formatType = args["format"]["type"]
+
     if os.name == "posix":  # OS가 Unix계열일 경우 (MacOS 포함)
         driver = webdriver.Chrome(os.getcwd() + "/chromedriver")
     else:  # OS가 windows일 경우
         driver = webdriver.Chrome("chromedriver.exe")
-    time.sleep(3)
+
+    time.sleep(0.5)
     driver.maximize_window()
     driver.get("http://www.instagram.com")
+
+    #Login Instagram
     waitForElement(driver,"//section/main/article/div[2]/div[2]/p/a")
     driver.find_element_by_xpath("//section/main/article/div[2]/div[2]/p/a").click()
     waitForElement(driver,"//*[@id='react-root']/section/main/article/div[2]/div[1]/div/form/div[1]/input")
@@ -457,29 +466,52 @@ def runInstagram(args):
     driver.find_element_by_xpath("//*[@id='react-root']/section/main/article/div[2]/div[1]/div/form/div[2]/input").send_keys("1379555")
     waitForElement(driver,"//*[@id='react-root']/section/main/article/div[2]/div[1]/div/form/span/button")
     driver.find_element_by_xpath("//*[@id='react-root']/section/main/article/div[2]/div[1]/div/form/span/button").click()
-    waitForElement(driver,"//*[@id='react-root']/section/nav/div/div/div/div[2]/input")
-    driver.find_element_by_xpath("//*[@id='react-root']/section/nav/div/div/div/div[2]/input").send_keys("#나이키")
-    time.sleep(1)
-    driver.find_element_by_xpath("//*[@id='react-root']/section/nav/div/div/div/div[2]/input").send_keys(Keys.RETURN)
-    time.sleep(2)
-    waitForElement(driver, "//*[@id='react-root']/section/main/article/div[2]/div[3]/a")
-    driver.find_element_by_xpath("//*[@id='react-root']/section/main/article/div[2]/div[3]/a").click()
-    time.sleep(2)
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    time.sleep(2)
 
-    elements = []
-    elements = driver.find_elements_by_class_name("_jjzlb")
-    print(elements)
-    print(len(elements))
+    #Search Hashtag
+    for curTag in tags:
+        waitForElement(driver,"//*[@id='react-root']/section/nav/div/div/div/div[2]/input")
+        driver.find_element_by_xpath("//*[@id='react-root']/section/nav/div/div/div/div[2]/input").send_keys("#" + curTag)
+        time.sleep(1)
+        driver.find_element_by_xpath("//*[@id='react-root']/section/nav/div/div/div/div[2]/input").send_keys(Keys.RETURN)
+        time.sleep(2)
+        waitForElement(driver, "//*[@id='react-root']/section/main/article/div[2]/div[3]/a")
+        driver.find_element_by_xpath("//*[@id='react-root']/section/main/article/div[2]/div[3]/a").click()
+        time.sleep(1)
 
-    for ele in elements:
-        img_url = ele.find_element_by_xpath(".//*").get_attribute('src')
-        inputData = urlopen(img_url).read()
+        while len(driver.find_elements_by_class_name("_jjzlb")) <= formatCount:
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(0.2)
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight-500);")
+            time.sleep(0.2)
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight-1200);")
+            time.sleep(0.2)
 
-        downloaded_image = "NIKE" + str(elements.index(ele)) +".jpg"
-        f = open(downloaded_image, "wb")
-        f.write(inputData)
+        elements = []
+        elements = driver.find_elements_by_class_name("_jjzlb")
+        del elements[formatCount:]
+
+        #Save Text
+        if (formatType[0] == 1):
+            #f = open("#" + curTag + ".txt" , 'w+')
+            f = codecs.open("#" + curTag + ".txt", "wb", "utf-8")
+            for ele in elements:
+                f.write(str(elements.index(ele)+1) + " ")
+                curText = ele.find_element_by_xpath(".//*").get_attribute('alt')
+                f.write(curText + "\r\r\n\r\r\n")
+            f.close()
+
+        #Save Image
+        if(formatType[1] == 1):
+            for ele in elements:
+                img_url = ele.find_element_by_xpath(".//*").get_attribute('src')
+                inputData = urlopen(img_url).read()
+
+                downloaded_image = "#" + curTag + str(elements.index(ele)+1) + ".jpg"
+                sf = open(downloaded_image, "wb")
+                sf.write(inputData)
+                sf.close()
+
+
 
 def runFacebook(args):
     return 0;
