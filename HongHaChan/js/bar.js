@@ -310,7 +310,7 @@ var handleKeyDown = function (e) {
     if (e.keyCode === ENTER_KEYCODE) {
         if (insertTag_TF === 12) {
             console.log('in!!!!!')
-            alert('New Tag is Added.');
+            //alert('New Tag is Added.');
             chrome.runtime.sendMessage({type: 'insertTag'});
         }
     }
@@ -761,7 +761,7 @@ $(function () {
         if (bToggleSNS == 1) bToggleSNS = 0;
         else bToggleSNS = 1;
 
-        alert("SNS = " + bToggleSNS);
+        // alert("SNS = " + bToggleSNS);
 
         $("ul.tabs li").removeClass("active").css("color", "#333");
         //$(this).addClass("active").css({"color": "darkred","font-weight": "bolder"});
@@ -782,7 +782,7 @@ $(function () {
          $("#" + activeTab).fadeIn()*/
         var coma = ',';
         var str1 = document.getElementById("insertTag");
-        alert("New Tag is Added.");
+        // alert("New Tag is Added.");
 
         document.getElementById('insertTag').value = str1.value + coma + ' ';
         $('#insertTag').focus();
