@@ -26,7 +26,9 @@ cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 taskThreadList = []
 
-#TODO Seongha Schduler
+savePathName = "DataCollections/"
+
+#TODO Seongha Scheduler
 
 def pendingSchedule():
     while True:
@@ -471,8 +473,16 @@ def parsingTags(targetText):
 
     return resultTags
 
-
+####################################### instagram
 def runInstagram(args):
+
+    #savePathName
+    pathName = savePathName+"instagram/"
+
+    #directory 없다면 생성한다.
+    if not os.path.exists(pathName):
+        os.makedirs(pathName)
+
 
     tags = args["tags"]
     formatCount = args["format"]["count"]
@@ -497,8 +507,13 @@ def runInstagram(args):
     waitForElement(driver,"//*[@id='react-root']/section/main/article/div[2]/div[1]/div/form/span/button")
     driver.find_element_by_xpath("//*[@id='react-root']/section/main/article/div[2]/div[1]/div/form/span/button").click()
 
-    #Search Hashtag
+    #Search Hashtag : each for Tag!
     for curTag in tags:
+
+        pathNameCurTag = pathName+curTag;
+        if not os.path.exists(pathNameCurTag):
+            os.makedirs(pathNameCurTag)
+
         waitForElement(driver,"//*[@id='react-root']/section/nav/div/div/div/div[2]/input")
         driver.find_element_by_xpath("//*[@id='react-root']/section/nav/div/div/div/div[2]/input").send_keys("#" + curTag)
         time.sleep(1)
@@ -523,7 +538,7 @@ def runInstagram(args):
         #Save Text
         if (formatType[0] == 1):
             #f = open("#" + curTag + ".txt" , 'w+')
-            f = codecs.open("#" + curTag + "(instagram)" + ".txt", "wb", "utf-8")
+            f = codecs.open(pathNameCurTag + "/textData" + ".txt", "wb", "utf-8")
             for ele in elements:
                 f.write(str(elements.index(ele)+1) + " ")
                 curText = ele.find_element_by_xpath(".//*").get_attribute('alt')
@@ -531,13 +546,16 @@ def runInstagram(args):
             f.close()
 
         #Save Image
+        pathNameCurTagImg = pathNameCurTag+'/img';
+        if not os.path.exists(pathNameCurTagImg):
+            os.makedirs(pathNameCurTagImg)
         if(formatType[1] == 1):
             for ele in elements:
                 img_url = ele.find_element_by_xpath(".//*").get_attribute('src')
                 inputData = urlopen(img_url).read()
 
-                downloaded_image = "#" + curTag + str(elements.index(ele)+1) + ".jpg"
-                sf = open(downloaded_image, "wb")
+                downloaded_image = "/" + curTag + str(elements.index(ele)+1) + ".jpg"
+                sf = open(pathNameCurTagImg+downloaded_image, "wb")
                 sf.write(inputData)
                 sf.close()
 
@@ -560,9 +578,10 @@ def runInstagram(args):
                 "count": formatCount,
                 "data": dataList
             }
-            with open("#" + curTag + "(instagram)" + '.json', 'w') as f:
+            with open(pathNameCurTag+"/" + curTag + "(instagram)" + '.json', 'w') as f:
                 json.dump(targetData, f)  # 저정된 데이터는 다른 python 에서 실행이된다.
 
+####################################### facebook
 def runFacebook(args):
     tags = args["tags"]
     formatCount = args["format"]["count"]
@@ -614,7 +633,7 @@ def runFacebook(args):
                 f.write(str(elements.index(ele) + 1) + " ")
                 curText = ele.text
                 curText = curText[0:len(curText)-5] #번역보기 자르기
-                f.write(curText + "\r\r\n\r\r\n")
+                f.write(curText + "\r\r\n\r\r\n") #Facebook Text write
             f.close()
 
         # element1 = driver.find_elements_by_class_name('_5dec')[0].find_elements_by_xpath(".//*")[0]
@@ -635,7 +654,7 @@ def runFacebook(args):
 
                 downloaded_image = "#" + curTag + str(elements.index(ele) + 1) + ".jpg"
                 sf = open(downloaded_image, "wb")
-                sf.write(inputData)
+                sf.write(inputData) #Facebook image write
                 sf.close()
 
         if (formatType[2] == 1):
@@ -677,7 +696,7 @@ def runFacebook(args):
                 "data": dataList
             }
             with open("#" + curTag + "(facebook)" + '.json', 'w') as f:
-                json.dump(targetData, f)  # 저정된 데이터는 다른 python 에서 실행이된다.
+                json.dump(targetData, f)  #Facebook json write
 
 
 
