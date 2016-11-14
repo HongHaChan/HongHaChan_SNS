@@ -442,6 +442,36 @@ def runTask(args):
         except:
             return jsonify(resultCode=1)
 
+def parsingTags(targetText):
+    resultTags = []
+    tagStart = 0
+    isSaving = False
+    isSpace = True
+
+    for i in range(len(targetText)):
+        if(targetText[i] == "#"):
+
+            if(tagStart != 0 and isSpace == False):
+                resultTags.append(targetText[tagStart:i])
+                isSaving = False
+            tagStart = i
+            isSaving = True
+            isSpace = False
+
+        elif(targetText[i] == ' ' and isSaving == True):
+            isSaving = False
+            isSpace = True
+            resultTags.append(targetText[tagStart:i])
+
+        elif(targetText[i] == ' '):
+            isSpace = True
+
+        else:
+            isSpace = False
+
+    return resultTags
+
+
 def runInstagram(args):
 
     tags = args["tags"]
@@ -493,7 +523,7 @@ def runInstagram(args):
         #Save Text
         if (formatType[0] == 1):
             #f = open("#" + curTag + ".txt" , 'w+')
-            f = codecs.open("#" + curTag + ".txt", "wb", "utf-8")
+            f = codecs.open("#" + curTag + "(instagram)" + ".txt", "wb", "utf-8")
             for ele in elements:
                 f.write(str(elements.index(ele)+1) + " ")
                 curText = ele.find_element_by_xpath(".//*").get_attribute('alt')
@@ -511,9 +541,147 @@ def runInstagram(args):
                 sf.write(inputData)
                 sf.close()
 
+        if(formatType[2] == 1):
+            dataList = []
 
+            for ele in elements:
+                curText = ele.find_element_by_xpath(".//*").get_attribute('alt')
+                img_url = ele.find_element_by_xpath(".//*").get_attribute('src')
+                eleTagList = parsingTags(curText)
+                eleData = {
+                    "content" : curText,
+                    "image_url" : img_url,
+                    "tags" : eleTagList
+                }
+                dataList.append(eleData)
+
+            targetData = {
+                "keyword": curTag,
+                "count": formatCount,
+                "data": dataList
+            }
+            with open("#" + curTag + "(instagram)" + '.json', 'w') as f:
+                json.dump(targetData, f)  # 저정된 데이터는 다른 python 에서 실행이된다.
 
 def runFacebook(args):
+    tags = args["tags"]
+    formatCount = args["format"]["count"]
+    formatType = args["format"]["type"]
+
+    if os.name == "posix":  # OS가 Unix계열일 경우 (MacOS 포함)
+        driver = webdriver.Chrome(os.getcwd() + "/chromedriver")
+    else:  # OS가 windows일 경우
+        driver = webdriver.Chrome("chromedriver.exe")
+
+    time.sleep(0.5)
+    driver.maximize_window()
+    driver.get("http://www.facebook.com")
+
+    #Login Facebook
+    waitForElement(driver,'//*[@id="email"]')
+    driver.find_element_by_xpath('//*[@id="email"]').send_keys('tjdghdrb2@naver.com')
+    waitForElement(driver, '//*[@id="pass"]')
+    driver.find_element_by_xpath('//*[@id="pass"]').send_keys('1379%%%')
+    time.sleep(1)
+    waitForElement(driver, '//*[@id="u_0_p"]')
+    driver.find_element_by_xpath('//*[@id="u_0_p"]').click()
+
+    #Exit Alert
+    time.sleep(1)
+    waitForElement(driver, '//*[@id="q"]')
+    driver.find_element_by_xpath('//*[@id="q"]').send_keys(Keys.ESCAPE)
+    time.sleep(1)
+
+    #Search Tags
+    for curTag in tags:
+        waitForElement(driver, '//*[@id="q"]')
+        driver.find_element_by_xpath('//*[@id="q"]').send_keys("#" + curTag)
+        time.sleep(1)
+        driver.find_element_by_xpath('//*[@id="q"]').send_keys(Keys.RETURN)
+
+        while len(driver.find_elements_by_class_name("_5pbx")) <= formatCount:
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(0.2)
+
+        # Save Text
+        if (formatType[0] == 1):
+            elements = []
+            elements = driver.find_elements_by_class_name("_5pbx")
+            del elements[formatCount:]
+
+            f = codecs.open("#" + curTag + "(facebook)" + ".txt", "wb", "utf-8")
+            for ele in elements:
+                f.write(str(elements.index(ele) + 1) + " ")
+                curText = ele.text
+                curText = curText[0:len(curText)-5] #번역보기 자르기
+                f.write(curText + "\r\r\n\r\r\n")
+            f.close()
+
+        # element1 = driver.find_elements_by_class_name('_5dec')[0].find_elements_by_xpath(".//*")[0]
+        # element1.find_elements_by_xpath(".//*")[0].get_attribute('src')
+        # Save Image
+        if (formatType[1] == 1):
+            while len(driver.find_elements_by_class_name("_5cq3")) <= formatCount:
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(0.2)
+
+            elements = []
+            elements = driver.find_elements_by_class_name('_5cq3')  #_2a2q
+            del elements[formatCount:]
+
+            for ele in elements:
+                img_url = ele.find_element_by_xpath(".//*//*//*").get_attribute('src')
+                inputData = urlopen(img_url).read()
+
+                downloaded_image = "#" + curTag + str(elements.index(ele) + 1) + ".jpg"
+                sf = open(downloaded_image, "wb")
+                sf.write(inputData)
+                sf.close()
+
+        if (formatType[2] == 1):
+            while len(driver.find_elements_by_class_name('_1dwg')) <= formatCount:
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(0.2)
+
+            #text
+            elements = []
+            elements = driver.find_elements_by_class_name("_1dwg")
+            del elements[formatCount:]
+
+            dataList = []
+
+            for ele in elements:
+                #text
+                curText = ele.find_element_by_class_name('_5pbx').text
+                curText = curText[0:len(curText)-5] #번역보기 자르기
+                eleTagList = parsingTags(curText)
+
+                #image
+                imgUrlList = []
+                urlElementList = []
+                urlElementList = ele.find_element_by_class_name('_3x-2').find_elements_by_xpath(".//*//*//*//*//*//*")
+
+                for urlElement in urlElementList:
+                    imgUrlList.append(urlElement.get_attribute('src'))
+
+                eleData = {
+                    "content": curText,
+                    "image_url": imgUrlList,
+                    "tags": eleTagList
+                }
+                dataList.append(eleData)
+
+            targetData = {
+                "keyword": curTag,
+                "count": formatCount,
+                "data": dataList
+            }
+            with open("#" + curTag + "(facebook)" + '.json', 'w') as f:
+                json.dump(targetData, f)  # 저정된 데이터는 다른 python 에서 실행이된다.
+
+
+
+
     return 0;
 
 def runTwitter(args):
