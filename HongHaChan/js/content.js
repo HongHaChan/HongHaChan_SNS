@@ -183,6 +183,9 @@ xh.evaluateQuery = function(query) {
 ////////////////////////////////////////////////////////////
 // xh.Bar class definition
 
+
+
+
 xh.Bar = function() {
   this.boundHandleRequest_ = this.handleRequest_.bind(this);
   this.boundMouseMove_ = this.mouseMove_.bind(this);
@@ -199,6 +202,18 @@ xh.Bar = function() {
 
   document.addEventListener('keydown', this.boundKeyDown_);
   chrome.runtime.onMessage.addListener(this.boundHandleRequest_);
+};
+
+
+//TODO Hq
+xh.Bar.prototype.insertTag_ = function() {
+  function impl() {
+    var coma = ',';
+    var str1 = document.getElementById("insertTag");
+    document.getElementById('insertTag').value = str1.value+coma+' ';
+    $('#insertTag').focus();
+  }
+  window.setTimeout(impl, 0);
 };
 
 xh.Bar.prototype.hidden_ = function() {
@@ -265,8 +280,9 @@ xh.Bar.prototype.handleRequest_ = function(request, sender, cb) {
     window.focus();
   } else if (request.type === 'toggleBar') {
     this.toggleBar_();
+  }else if (request.type === 'insertTag') {
+    this.insertTag_();
   }
-
 
    if(request.type === 'leftMove'){
       this.barFrame_.classList.remove('right');

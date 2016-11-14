@@ -28,6 +28,7 @@
 
 var MOVE_COOLDOWN_PERIOD_MS = 400;
 var X_KEYCODE = 88;
+var ENTER_KEYCODE = 13;
 
 // Global variables.
 var gnLastMoveTimeInMs = 0;
@@ -44,29 +45,28 @@ var bToggleSNS = 1; // 1 is SNS MODE , 0 is Custom Mode
 ///////////////
 var gnTaskId = 0; //현재 진행하고 있는 TaskId
 var gajTasks = [];
-var gURLFlag=0; // Chrome Extension에서 가져올때는 URL 이벤트를 발생 시키지 않는다.
+var gURLFlag = 0; // Chrome Extension에서 가져올때는 URL 이벤트를 발생 시키지 않는다.
 //Chrome Storage Key Constant
 const TASK_KEY = "TASK"; // gnTaskId
-const TASK_DATE ="TASK_DATE"; // Date per TaskID
-const TASK_LOOP_COUNT ="TASK_LOOP_COUNT"; // LoopCount per TASKID
+const TASK_DATE = "TASK_DATE"; // Date per TaskID
+const TASK_LOOP_COUNT = "TASK_LOOP_COUNT"; // LoopCount per TASKID
 
 //TODO Task 페이지 관리
 $(function () {
     $('a.taskSelectFunction').bind('click', function () {
 
-        if(gnTaskId !=this.id) {
+        if (gnTaskId != this.id) {
             gnTaskId = this.id;
 
             //TODO 새로 지우고 다시 update를 해야한다.
 
-            if(bToggleSNS==1)
-            {
+            if (bToggleSNS == 1) {
                 //TODO SNS 모드 상태에서 초기화 및
 
 
             }
-            else{
-                while (gnCounter>1) {
+            else {
+                while (gnCounter > 1) {
 
                     $gaQueryEl[gnCounter - 1].removeEventListener('keyup', evaluateQuery);
                     $gaQueryEl[gnCounter - 1].removeEventListener('mouseup', evaluateQuery);
@@ -79,13 +79,13 @@ $(function () {
                     gnCounter--;
                 }
 
-                if(!loadStorage())//비여있다면 하나 넣어줘야한다.
+                if (!loadStorage())//비여있다면 하나 넣어줘야한다.
                 {
                     $('input#x_path1').val('');
                     $('input#input_text1').val('');
 
                     $('select#select_command1').val('Select commands').change();
-                    $("button.select_logic"+gnCounter).remove();//무조건 다 지운다. 빈거이기 때문
+                    $("button.select_logic" + gnCounter).remove();//무조건 다 지운다. 빈거이기 때문
                     $('select#select_extention1').val('Select Extention').change();//지우지못했어 css만 지웠음..
                     $('div#div_select1').hide();
 
@@ -148,8 +148,8 @@ function loadInputData() {
             $('input#input_text' + i).val(task[i - 1].inputText)
         });
         $(function () {
-            if(task[i - 1].selectCommand == "URL")
-                gURLFlag=1;
+            if (task[i - 1].selectCommand == "URL")
+                gURLFlag = 1;
             $('select#select_command' + i).val(task[i - 1].selectCommand).change()
         });
 
@@ -170,17 +170,17 @@ function loadInputData() {
     console.log("Chrome get------------------------------");
     console.log(keyDate);
     chrome.storage.sync.get(keyDate, function (item) {
-        if(item[keyDate]!= undefined) {
+        if (item[keyDate] != undefined) {
             $('input#schedule_date').val(item[keyDate]);
             console.log(item[keyDate]);
         }
     });
 
     //LOOP Count
-    var keyLoopCount= (TASK_LOOP_COUNT + gnTaskId);
+    var keyLoopCount = (TASK_LOOP_COUNT + gnTaskId);
     console.log(keyLoopCount);
     chrome.storage.sync.get(keyLoopCount, function (item) {
-        if(item[keyLoopCount]!=undefined) {
+        if (item[keyLoopCount] != undefined) {
             $('input#loop_count').val(item[keyLoopCount]);
             console.log(item[keyLoopCount]);
         }
@@ -197,12 +197,11 @@ $(function () {
         //     alert("Chrome Storage CLEAR");
         // });
 
-        chrome.storage.sync.remove((TASK_KEY+gnTaskId),function()
-        {
-            alert("Chrome Storage remove : "+(TASK_KEY+gnTaskId));
+        chrome.storage.sync.remove((TASK_KEY + gnTaskId), function () {
+            alert("Chrome Storage remove : " + (TASK_KEY + gnTaskId));
 
             //TODO 새로 지우고 다시 update를 해야한다.
-            while (gnCounter>1) {
+            while (gnCounter > 1) {
 
                 $gaQueryEl[gnCounter - 1].removeEventListener('keyup', evaluateQuery);
                 $gaQueryEl[gnCounter - 1].removeEventListener('mouseup', evaluateQuery);
@@ -217,13 +216,13 @@ $(function () {
 
             //TODO 새로 그리기 //바뀌어진 아이디로 그리면된다.
 
-            if(!loadStorage())//비여있다면 하나 넣어줘야한다.
+            if (!loadStorage())//비여있다면 하나 넣어줘야한다.
             {
                 $('input#x_path1').val('');
                 $('input#input_text1').val('');
 
                 $('select#select_command1').val('Select commands').change();
-                $("button.select_logic"+gnCounter).remove();//무조건 다 지운다. 빈거이기 때문
+                $("button.select_logic" + gnCounter).remove();//무조건 다 지운다. 빈거이기 때문
                 $('select#select_extention1').val('Select Extention').change();//지우지못했어 css만 지웠음..
                 $('div#div_select1').hide();
                 $('label#information1').val('');
@@ -231,7 +230,6 @@ $(function () {
             }
 
         });
-
 
 
     });
@@ -249,41 +247,41 @@ var evaluateQuery = function () {	//마우스로 영역 선택시 리퀘스트 �
     });
 };
 
-var handleRequest = function(request, sender, cb) {
+var handleRequest = function (request, sender, cb) {
     if (request.type === 'update') {
         if (request.query !== null) {
-            $gaQueryEl[gnCounter-1].value = request.query;
+            $gaQueryEl[gnCounter - 1].value = request.query;
         }
         if (request.results !== null) {
-            if(request.results[0].length >300)
-                $gaResultsEl[gnCounter-1].innerHTML = request.results[0].slice(0,300);
+            if (request.results[0].length > 300)
+                $gaResultsEl[gnCounter - 1].innerHTML = request.results[0].slice(0, 300);
             else
-                $gaResultsEl[gnCounter-1].innerHTML = request.results[0];
+                $gaResultsEl[gnCounter - 1].innerHTML = request.results[0];
             $nodeCountText.nodeValue = request.results[1];
         }
     }
-    if(request.type === 'receiveURL'){
+    if (request.type === 'receiveURL') {
         console.log(request.results)
         $('input#input_text' + gnCounter).val(request.results.url);
         //console.log("prev url : " + document.referrer);
         //$('input#input_text' + gnCounter).val(document.referrer);
     }
-    if(request.type === 'executeTask1'){
+    if (request.type === 'executeTask1') {
         $('a.taskSelectFunction#0').click();
     }
-    if(request.type === 'executeTask2'){
+    if (request.type === 'executeTask2') {
         $('a.taskSelectFunction#1').click();
     }
-    if(request.type === 'executeTask3'){
+    if (request.type === 'executeTask3') {
         $('a.taskSelectFunction#2').click();
     }
-    if(request.type === 'executeTask4'){
+    if (request.type === 'executeTask4') {
         $('a.taskSelectFunction#3').click();
     }
-    if(request.type === 'executeTask5'){
+    if (request.type === 'executeTask5') {
         $('a.taskSelectFunction#settings').click();
     }
-    if(request.type === 'runTask'){
+    if (request.type === 'runTask') {
         $('button#run').click();
     }
 };
@@ -308,6 +306,15 @@ var handleKeyDown = function (e) {
     if (e.keyCode === X_KEYCODE && ctrlKey && shiftKey) {
         chrome.runtime.sendMessage({type: 'hideBar'});
     }
+
+    if (e.keyCode === ENTER_KEYCODE) {
+        if (insertTag_TF === 12) {
+            console.log('in!!!!!')
+            //alert('New Tag is Added.');
+            chrome.runtime.sendMessage({type: 'insertTag'});
+        }
+    }
+
 };
 
 $gaQueryEl[gnCounter - 1].addEventListener('keyup', evaluateQuery);
@@ -325,9 +332,9 @@ chrome.runtime.onMessage.addListener(handleRequest);
 function saveActionData() {
     // 객체 save 로직
     //TODO save 할때 모든 Task들에 대해서 값을 다시 가져와서 저장을 하도록
-    
 
-    for (var counterId = 2; counterId<=gnCounter ; counterId++) {
+
+    for (var counterId = 2; counterId <= gnCounter; counterId++) {
         var obj = {};
 
         obj.selectCommand = $('select#select_command' + (counterId - 1)).val();
@@ -353,7 +360,7 @@ function saveActionData() {
         console.log(gajTasks[gnTaskId][counterId - 2]);
 
     }
-    console.log("save actions gajTasks ------------------- : "+gnTaskId);
+    console.log("save actions gajTasks ------------------- : " + gnTaskId);
     console.log(gajTasks[gnTaskId]);
     saveStorage((TASK_KEY + gnTaskId), gajTasks[gnTaskId]);
 }
@@ -395,15 +402,15 @@ var deleteQuery = function () {	//chanhee
 $(function () {
     $('button#save').bind('click', function () {
         //TODO save 버튼을 누를시에도 저장을한다. gnTaskId 에 따라서 저장을 하면된다.
-        gnCounter+=1;
+        gnCounter += 1;
         saveActionData();
-        gnCounter-=1;
-        
+        gnCounter -= 1;
+
         //TODO date 저장
 
         //save Date to Chrome storage
-        var objDate={};
-        objDate[("TASK_DATE"+gnTaskId)] = $('input#schedule_date').val();
+        var objDate = {};
+        objDate[("TASK_DATE" + gnTaskId)] = $('input#schedule_date').val();
 
         chrome.storage.sync.set(objDate, function () {
             console.log("Date Save is suc !");
@@ -411,26 +418,26 @@ $(function () {
         });
 
         //save Loop Count to Chrome storage
-        var objLoopCount={};
-        objLoopCount[ ("TASK_LOOP_COUNT"+gnTaskId)] = $('input#loop_count').val();
+        var objLoopCount = {};
+        objLoopCount[("TASK_LOOP_COUNT" + gnTaskId)] = $('input#loop_count').val();
 
         chrome.storage.sync.set(objLoopCount, function () {
             console.log("Loop Count Save is suc !");
             console.log(objLoopCount);
         });
 
-        
+
     });
 });
 
 $(function () {
     $('button#left').bind('click', function () {
-            chrome.runtime.sendMessage({type: 'leftMove', results: ' '});
+        chrome.runtime.sendMessage({type: 'leftMove', results: ' '});
     });
 });
 $(function () {
     $('button#right').bind('click', function () {
-            chrome.runtime.sendMessage({type: 'rightMove', results: ' '});
+        chrome.runtime.sendMessage({type: 'rightMove', results: ' '});
     });
 });
 
@@ -439,34 +446,33 @@ $(function () {
     $('button#run').bind('click', function () {
 
         var sendData = {};
-        sendData.isSNS =bToggleSNS;
-        if(bToggleSNS==1)
-        {
+        sendData.isSNS = bToggleSNS;
+        if (bToggleSNS == 1) {
             alert(gnTaskId);
             sendData.taskId = gnTaskId;
-            sendData.targetSNS=[];
+            sendData.targetSNS = [];
             sendData.targetSNS.push(Number($('select#is_instagram').val()));
             sendData.targetSNS.push(Number($('select#is_facebook').val()));
             sendData.targetSNS.push(Number($('select#is_twitter').val()));
 
             tag_list = $('input#insertTag').val();//,로 나눠야한다.
-            sendData.tags=tag_list.split(", ");//tag_list , 로 나눠서 넣기
+            sendData.tags = tag_list.split(", ");//tag_list , 로 나눠서 넣기
 
             //TODO 아무래도 이 부분 수정해야할 필요가 있다.
             sendData.tags.pop();//마지막 공백
 
-            obj ={};
-            obj.type=[]; // 그것들각각넣자
-            obj.type.push(Number($('input#checkbox-1a').prop( "checked" )));
-            obj.type.push(Number($('input#checkbox-2a').prop( "checked" )));
-            obj.type.push(Number($('input#checkbox-3a').prop( "checked" )));
-            obj.count =  Number($('input#input_data_count').val()); //카운트 이거머지?
-            sendData.format= obj;
+            obj = {};
+            obj.type = []; // 그것들각각넣자
+            obj.type.push(Number($('input#checkbox-1a').prop("checked")));
+            obj.type.push(Number($('input#checkbox-2a').prop("checked")));
+            obj.type.push(Number($('input#checkbox-3a').prop("checked")));
+            obj.count = Number($('input#input_data_count').val()); //카운트 이거머지?
+            sendData.format = obj;
 
             console.log("SENDDATA ++++++++++++++++++++++++");
             console.log(sendData);
 
-        }else {
+        } else {
 
             //TODO last action data Save
             gnCounter += 1;//
@@ -513,7 +519,6 @@ $(function () {
             console.log(actions);
 
 
-
             sendData.taskId = gnTaskId; //TaskId 추가
             sendData.actions = actions; //Task에 해당하는 actions 배열 전달.
             sendData.scheduleDate = $('input#schedule_date').val();
@@ -535,7 +540,7 @@ $(function () {
         }
 
         console.log("=============send data to server ==================");
-        console.log("=============Mode ",bToggleSNS);
+        console.log("=============Mode ", bToggleSNS);
 
         console.log(sendData);
 
@@ -551,14 +556,13 @@ $(function () {
             success: function (data) {
                 //TODO 0905수정
                 //Data = { resultCdoe : 0 , gnTaskId : 0 } //둘다 Number
-                if(data["resultCode"] == 1) {
-                    alert('Task['+data["gnTaskId"]+'] Macro Success');
-                }else {
-                    alert('Task['+data["gnTaskId"]+'] Macro Failure');
+                if (data["resultCode"] == 1) {
+                    alert('Task[' + data["gnTaskId"] + '] Macro Success');
+                } else {
+                    alert('Task[' + data["gnTaskId"] + '] Macro Failure');
                 }
             },
-            fail : function ()
-            {
+            fail: function () {
                 alert('Network Error')
             }
         });
@@ -575,17 +579,16 @@ $(function () {
                 //UI Delete
                 $("div#form" + (gnCounter)).remove();
                 $("br:last").remove();
-                $("button.select_logic"+gnCounter).remove();
+                $("button.select_logic" + gnCounter).remove();
 
                 gnCounter--;
                 deleteQuery();//Data Delete
-            }else if(gnCounter == 1)
-            {
+            } else if (gnCounter == 1) {
                 $('input#x_path1').val('');
                 $('input#input_text1').val('');
 
                 $('select#select_command1').val('Select commands').change();
-                $("button.select_logic"+gnCounter).remove();//무조건 다 지운다. 빈거이기 때문
+                $("button.select_logic" + gnCounter).remove();//무조건 다 지운다. 빈거이기 때문
                 $('select#select_extention1').val('Select Extention').change();//지우지못했어 css만 지웠음..
                 $('div#div_select1').hide();
                 $('label#information1').val('');
@@ -601,17 +604,17 @@ $(function () {
             var target = $(e.target);
             var opt = target.val();
             console.log("selected opt = " + opt);
-            $("button.select_logic"+gnCounter).remove();//이전에 모든거지우고 새로추가
+            $("button.select_logic" + gnCounter).remove();//이전에 모든거지우고 새로추가
 
-            if(opt == 'URL'){
-                if(gURLFlag!=1)
+            if (opt == 'URL') {
+                if (gURLFlag != 1)
                     chrome.runtime.sendMessage({type: 'getURL', results: ' '});
                 else
-                    gURLFlag=0;
+                    gURLFlag = 0;
 
             }
             if (opt == 'CRAWLING') {
-                $('#div_select'+gnCounter).show();
+                $('#div_select' + gnCounter).show();
                 // var apphtml = $(
                 //     "<label for='select-extention' class='select ui-hidden-accessible'>select extention</label>" +
                 //
@@ -720,20 +723,20 @@ $(function () {
                 "<option value='END'>END</option>" +
                 "</select>" +
                 "</div>" +
-                "<div data-role='ui-field-contain' id='div_select"+ gnCounter + "' hidden>" +
-                "<label for='select-extention' class='select ui-hidden-accessible'>Select extention</label>"+
-                "<select name='select-extention' class='select-extention' id='select_extention"+ gnCounter + "'>"+
-                "<option>Select Extention</option>"+
-                "<option value='TXT'>TXT</option>"+
-                "<option value='PNG'>PNG</option>"+
-                "<option value='PICKLE'>PICKLE</option>"+
-                "<option value='JSON'>JSON</option>"+
-                "<option value='PDF'>PDF</option>"+
-                "<option value='VIDEO'>VIDEO</option>"+
-                "</select>"+
+                "<div data-role='ui-field-contain' id='div_select" + gnCounter + "' hidden>" +
+                "<label for='select-extention' class='select ui-hidden-accessible'>Select extention</label>" +
+                "<select name='select-extention' class='select-extention' id='select_extention" + gnCounter + "'>" +
+                "<option>Select Extention</option>" +
+                "<option value='TXT'>TXT</option>" +
+                "<option value='PNG'>PNG</option>" +
+                "<option value='PICKLE'>PICKLE</option>" +
+                "<option value='JSON'>JSON</option>" +
+                "<option value='PDF'>PDF</option>" +
+                "<option value='VIDEO'>VIDEO</option>" +
+                "</select>" +
                 "</div>" +
                 "<div data-role='ui-field-contain ui-block-b' >" +
-                "<label class='information' id='information"+ gnCounter + "'>Contents</label></div> " +
+                "<label class='information' id='information" + gnCounter + "'>Contents</label></div> " +
                 "</div>" +
                 "</div>");
 
@@ -755,10 +758,10 @@ $(function () {
     $(".tab_content:first").show();
 
     $("ul.tabs li").click(function () {
-        if(bToggleSNS == 1) bToggleSNS=0;
+        if (bToggleSNS == 1) bToggleSNS = 0;
         else bToggleSNS = 1;
 
-        alert("SNS = "+bToggleSNS);
+        // alert("SNS = " + bToggleSNS);
 
         $("ul.tabs li").removeClass("active").css("color", "#333");
         //$(this).addClass("active").css({"color": "darkred","font-weight": "bolder"});
@@ -772,41 +775,52 @@ $(function () {
 $(function () {
     $("input.addTag").click(function () {
         /*$("ul.tabs li").removeClass("active").css("color", "#333");
-        //$(this).addClass("active").css({"color": "darkred","font-weight": "bolder"});
-        $(this).addClass("active").css("color", "darkred");
-        $(".tab_content").hide()
-        var activeTab = $(this).attr("rel");
-        $("#" + activeTab).fadeIn()*/
+         //$(this).addClass("active").css({"color": "darkred","font-weight": "bolder"});
+         $(this).addClass("active").css("color", "darkred");
+         $(".tab_content").hide()
+         var activeTab = $(this).attr("rel");
+         $("#" + activeTab).fadeIn()*/
         var coma = ',';
         var str1 = document.getElementById("insertTag");
-        alert("New Tag is Added.");
+        // alert("New Tag is Added.");
 
-        document.getElementById('insertTag').value = str1.value+coma+' ';
+        document.getElementById('insertTag').value = str1.value + coma + ' ';
         $('#insertTag').focus();
     });
 });
 
 
 /*function insertTagbyEnter() {
-        var coma = ',';
-        var str1 = document.getElementById("insertTag");
-        alert("New Tag is Added.");
+ var coma = ',';
+ var str1 = document.getElementById("insertTag");
+ alert("New Tag is Added.");
 
-        document.getElementById('insertTag').value = str1.value+coma+' ';
-        $('#insertTag').focus();
-}
+ document.getElementById('insertTag').value = str1.value+coma+' ';
+ $('#insertTag').focus();
+ }
 
 
-$(function hitEnterKey(e){
-  if(e.keyCode == 13){
-   insertTagbyEnter();
-  }else{
-   e.keyCode == 0;
-  }
+ $(function hitEnterKey(e){
+ if(e.keyCode == 13){
+ insertTagbyEnter();
+ }else{
+ e.keyCode == 0;
+ }
  });*/
 
- $(document).ready(function(){
-  $(document).keypress(function(e){
-    if(e.keyCode==13) return false;
-  });
+$(document).ready(function () {
+    $(document).keypress(function (e) {
+        if (e.keyCode == 13) return false;
+    });
+});
+
+
+var insertTag_YN = $('.insertTag');
+var insertTag_TF;
+insertTag_YN.focus(function () {
+    insertTag_TF = 12;
+    console.log(insertTag_TF);
+});
+insertTag_YN.blur(function () {
+    insertTag_TF = 0;
 });
