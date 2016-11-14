@@ -536,7 +536,7 @@ def runInstagram(args):
                 img_url = ele.find_element_by_xpath(".//*").get_attribute('src')
                 inputData = urlopen(img_url).read()
 
-                downloaded_image = "#" + curTag + str(elements.index(ele)+1) + ".jpg"
+                downloaded_image = "#" + curTag + str(elements.index(ele)+1) + "(instagram)" + ".jpg"
                 sf = open(downloaded_image, "wb")
                 sf.write(inputData)
                 sf.close()
@@ -563,6 +563,8 @@ def runInstagram(args):
             with open("#" + curTag + "(instagram)" + '.json', 'w') as f:
                 json.dump(targetData, f)  # 저정된 데이터는 다른 python 에서 실행이된다.
 
+        print("[Instagram] #" + curTag + " End")
+
 def runFacebook(args):
     tags = args["tags"]
     formatCount = args["format"]["count"]
@@ -583,8 +585,9 @@ def runFacebook(args):
     waitForElement(driver, '//*[@id="pass"]')
     driver.find_element_by_xpath('//*[@id="pass"]').send_keys('1379%%%')
     time.sleep(1)
-    waitForElement(driver, '//*[@id="u_0_p"]')
-    driver.find_element_by_xpath('//*[@id="u_0_p"]').click()
+    driver.find_element_by_xpath('//*[@id="pass"]').send_keys(Keys.RETURN)
+    #waitForElement(driver, '//*[@id="u_0_p"]')
+    #driver.find_element_by_xpath('//*[@id="u_0_p"]').click()
 
     #Exit Alert
     time.sleep(1)
@@ -633,7 +636,7 @@ def runFacebook(args):
                 img_url = ele.find_element_by_xpath(".//*//*//*").get_attribute('src')
                 inputData = urlopen(img_url).read()
 
-                downloaded_image = "#" + curTag + str(elements.index(ele) + 1) + ".jpg"
+                downloaded_image = "#" + curTag + str(elements.index(ele) + 1) + "(facebook)" + ".jpg"
                 sf = open(downloaded_image, "wb")
                 sf.write(inputData)
                 sf.close()
@@ -679,14 +682,143 @@ def runFacebook(args):
             with open("#" + curTag + "(facebook)" + '.json', 'w') as f:
                 json.dump(targetData, f)  # 저정된 데이터는 다른 python 에서 실행이된다.
 
-
-
-
-    return 0;
+        print("[Facebook] #" + curTag + " End")
 
 def runTwitter(args):
-    return 0;
+    tags = args["tags"]
+    formatCount = args["format"]["count"]
+    formatType = args["format"]["type"]
 
+    if os.name == "posix":  # OS가 Unix계열일 경우 (MacOS 포함)
+        driver = webdriver.Chrome(os.getcwd() + "/chromedriver")
+    else:  # OS가 windows일 경우
+        driver = webdriver.Chrome("chromedriver.exe")
+
+    time.sleep(0.5)
+    driver.maximize_window()
+    driver.get("http://www.twitter.com")
+
+    #Login
+    waitForElement(driver, '//*[@id="doc"]/div[1]/div/div[1]/div[2]/a[3]')
+    driver.find_element_by_xpath('//*[@id="doc"]/div[1]/div/div[1]/div[2]/a[3]').click()
+    waitForElement(driver, '//*[@id="login-dialog-dialog"]/div[2]/div[2]/div[2]/form/div[1]/input')
+    driver.find_element_by_xpath('//*[@id="login-dialog-dialog"]/div[2]/div[2]/div[2]/form/div[1]/input').send_keys('tjdghdrb2@naver.com')
+    waitForElement(driver, '//*[@id="login-dialog-dialog"]/div[2]/div[2]/div[2]/form/div[2]/input')
+    driver.find_element_by_xpath('//*[@id="login-dialog-dialog"]/div[2]/div[2]/div[2]/form/div[2]/input').send_keys('1379%%%')
+    waitForElement(driver, '//*[@id="login-dialog-dialog"]/div[2]/div[2]/div[2]/form/input[1]')
+    driver.find_element_by_xpath('//*[@id="login-dialog-dialog"]/div[2]/div[2]/div[2]/form/input[1]').click()
+
+    #Search Tag
+    isFirst = False
+    for index, curTag in enumerate(tags):
+        if(isFirst == False):
+            isFirst = True
+        else:
+            waitForElement(driver, '//*[@id="search-query"]')
+            for i in range(len(tags[index-1])+1):
+                driver.find_element_by_xpath('//*[@id="search-query"]').send_keys(Keys.BACKSPACE)
+            print("[Twitter]TagBackspace Complete")
+            time.sleep(1)
+
+        waitForElement(driver, '//*[@id="search-query"]')
+        driver.find_element_by_xpath('//*[@id="search-query"]').send_keys("#" + curTag)
+        time.sleep(1)
+        waitForElement(driver, '//*[@id="search-query"]')
+        driver.find_element_by_xpath('//*[@id="search-query"]').send_keys(Keys.RETURN)
+        time.sleep(2)
+
+        while len(driver.find_elements_by_class_name('tweet')) <= formatCount:
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(0.2)
+
+        # Save Text
+        if (formatType[0] == 1):
+            elements = []
+            elements = driver.find_elements_by_class_name('tweet')
+            del elements[formatCount:]
+
+            f = codecs.open("#" + curTag + "(twitter)" + ".txt", "wb", "utf-8")
+            for ele in elements:
+                f.write(str(elements.index(ele) + 1) + " ")
+                curText = None
+                try:
+                    curText = ele.find_element_by_class_name('js-tweet-text-container').text
+                    f.write(curText + "\r\r\n\r\r\n")
+                except:
+                    print("[Twitter]No Text")
+
+            f.close()
+
+        # element1 = driver.find_elements_by_class_name('_5dec')[0].find_elements_by_xpath(".//*")[0]
+        # element1.find_elements_by_xpath(".//*")[0].get_attribute('src')
+        # Save Image
+        if (formatType[1] == 1):
+            while len(driver.find_elements_by_class_name('AdaptiveMedia-photoContainer')) <= formatCount:
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(0.2)
+
+            elements = []
+            elements = driver.find_elements_by_class_name('AdaptiveMedia-photoContainer')
+            del elements[formatCount:]
+
+            for ele in elements:
+                try:
+                    img_url = ele.get_attribute('data-image-url')
+                    inputData = urlopen(img_url).read()
+
+                    downloaded_image = "#" + curTag + str(elements.index(ele) + 1) + "(twitter)" + ".jpg"
+                    sf = open(downloaded_image, "wb")
+                    sf.write(inputData)
+                    sf.close()
+                except:
+                    print("[Twitter]Not Search Image Url")
+
+        if (formatType[2] == 1):
+            # text
+            elements = []
+            elements = driver.find_elements_by_class_name('tweet')
+            del elements[formatCount:]
+
+            dataList = []
+
+            for ele in elements:
+                # text
+                curText = ele.find_element_by_class_name('js-tweet-text-container').text
+                eleTagList = parsingTags(curText)
+
+                # image
+                isMultipleImage = False
+                imgUrl = None
+                multipleElementList = []
+                imgUrlList = []
+                try:
+                    #imgUrl = ele.find_element_by_class_name('AdaptiveMedia').find_element_by_xpath(".//*//*//*").get_attribute('data-image-url')
+                    #imgUrlList.append(imgUrl)
+                    multipleElementList = ele.find_elements_by_class_name('AdaptiveMedia-photoContainer')
+                    isMultipleImage = True
+                except:
+                    print("[Twitter]Null Image")
+
+                if(isMultipleImage == True):
+                    for multipleElement in multipleElementList:
+                        imgUrlList.append(multipleElement.get_attribute('data-image-url'))
+
+                eleData = {
+                    "content": curText,
+                    "image_url": imgUrlList,
+                    "tags": eleTagList
+                }
+                dataList.append(eleData)
+
+            targetData = {
+                "keyword": curTag,
+                "count": formatCount,
+                "data": dataList
+            }
+            with open("#" + curTag + "(twitter)" + '.json', 'w') as f:
+                json.dump(targetData, f)  # 저정된 데이터는 다른 python 에서 실행이된다.
+
+        print("[Twitter] #" + curTag + " End")
 
 typeSNS = {
     0 : runInstagram,
@@ -737,9 +869,9 @@ def analysis_json():
 
     # TODO Thread 처리
     if (isSNS == 1):  #SNS
-        for item in targetSNS:
+        for index, item in enumerate(targetSNS):
             if(item == 1):
-                taskThread = Thread(name=curTaskId, target=typeSNS.get(targetSNS.index(item)), args=[data])
+                taskThread = Thread(target=typeSNS.get(index), args=[data])
                 taskThreadList.append(taskThread)
                 taskThread.start()
 
