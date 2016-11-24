@@ -212,7 +212,7 @@ xh.Bar.prototype.insertTag_ = function() {
   function impl() {
     var str1 = document.getElementById("insertTag");
 
-    if(str1.value =='') return;
+    if(str1.value =='' && str1.value == ' ') return;
 
     console.log(str1.value);
     console.log(document.getElementById("addTagP"));
