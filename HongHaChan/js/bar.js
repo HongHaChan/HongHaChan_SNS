@@ -802,6 +802,9 @@ $(function () {
     });
 
     $("button#subTag").click(function () {
+        var str2 =$("#addTagP").text();
+        str2 = str2.trim();
+        gaTags=str2.split(' ');
         gaTags.pop();
         document.getElementById("addTagP").innerHTML="";
         for(var s in gaTags)
