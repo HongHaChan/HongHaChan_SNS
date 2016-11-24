@@ -1,0 +1,10 @@
+diff a/HongHaChan/js/bar.js b/HongHaChan/js/bar.js	(rejected hunks)
+@@ -310,7 +310,7 @@
+     if (e.keyCode === ENTER_KEYCODE) {
+         if (insertTag_TF === 12) {
+             console.log('in!!!!!')
+-            alert('New Tag is Added.');
++            //alert('New Tag is Added.');
+             chrome.runtime.sendMessage({type: 'insertTag'});
+         }
+     }
