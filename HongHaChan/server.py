@@ -442,35 +442,33 @@ def runTask(args):
         except:
             return jsonify(resultCode=1)
 
-def parsingTags(targetText):
-    resultTags = []
-    tagStart = 0
-    isSaving = False
-    isSpace = True
+def parsingTags(str):
+    list = []
 
-    for i in range(len(targetText)):
-        if(targetText[i] == "#"):
+    start = 0
+    idx = 0;
+    i = 0
+    while (i < len(str)):
+        if start == 0 and str[i] == '#':
+            start = 1
+            idx = i
+        elif start == 1:
+            if str[i] == '#':
+                list.append(str[idx:i])
+                start = 0
+                i = i - 1
+            elif str[i] == ' ':
+                list.append(str[idx:i])
+                start = 0
+            elif str[i] == '\n':
+                list.append(str[idx:i])
+                start = 0
+            elif i == (len(str) - 1):
+                list.append(str[idx:i + 1])
+                start = 0
+        i = i + 1
 
-            if(tagStart != 0 and isSpace == False):
-                resultTags.append(targetText[tagStart:i])
-                isSaving = False
-            tagStart = i
-            isSaving = True
-            isSpace = False
-
-        elif(targetText[i] == ' ' and isSaving == True):
-            isSaving = False
-            isSpace = True
-            resultTags.append(targetText[tagStart:i])
-
-        elif(targetText[i] == ' '):
-            isSpace = True
-
-        else:
-            isSpace = False
-
-    return resultTags
-
+    return list
 
 def runInstagram(args):
 
