@@ -46,6 +46,7 @@ var bToggleSNS = 1; // 1 is SNS MODE , 0 is Custom Mode
 var gnTaskId = 0; //현재 진행하고 있는 TaskId
 var gajTasks = [];
 var gURLFlag = 0; // Chrome Extension에서 가져올때는 URL 이벤트를 발생 시키지 않는다.
+var gaTags = [];
 //Chrome Storage Key Constant
 const TASK_KEY = "TASK"; // gnTaskId
 const TASK_DATE = "TASK_DATE"; // Date per TaskID
@@ -310,7 +311,6 @@ var handleKeyDown = function (e) {
     if (e.keyCode === ENTER_KEYCODE) {
         if (insertTag_TF === 12) {
             console.log('in!!!!!')
-            //alert('New Tag is Added.');
             chrome.runtime.sendMessage({type: 'insertTag'});
         }
     }
@@ -455,11 +455,16 @@ $(function () {
             sendData.targetSNS.push(Number($('select#is_facebook').val()));
             sendData.targetSNS.push(Number($('select#is_twitter').val()));
 
+            //TODO LEE
             tag_list = $('input#insertTag').val();//,로 나눠야한다.
-            sendData.tags = tag_list.split(", ");//tag_list , 로 나눠서 넣기
 
-            //TODO 아무래도 이 부분 수정해야할 필요가 있다.
-            sendData.tags.pop();//마지막 공백
+            var tagStr =$("#addTagP").text();
+            tagStr = tagStr.trim();
+            gaTags=tagStr.split(' ');
+
+            sendData.tags=[];
+            for(var tag in gaTags)
+                if(gaTags[tag]!=""&&gaTags[tag]!=" ") sendData.tags.push(gaTags[tag]);
 
             obj = {};
             obj.type = []; // 그것들각각넣자
@@ -773,19 +778,38 @@ $(function () {
 });
 
 $(function () {
-    $("input.addTag").click(function () {
-        /*$("ul.tabs li").removeClass("active").css("color", "#333");
-         //$(this).addClass("active").css({"color": "darkred","font-weight": "bolder"});
-         $(this).addClass("active").css("color", "darkred");
-         $(".tab_content").hide()
-         var activeTab = $(this).attr("rel");
-         $("#" + activeTab).fadeIn()*/
-        var coma = ',';
-        var str1 = document.getElementById("insertTag");
+    //TODO LEE
+    $("button#addTag").click(function () {
         // alert("New Tag is Added.");
 
-        document.getElementById('insertTag').value = str1.value + coma + ' ';
+        var str1 = $("#insertTag").val();
+        if(str1=='') return;
+
+        var str = $("#addTagP").text();
+        console.log("----------");
+        console.log(str);
+        console.log(str1);
+        document.getElementById("addTagP").innerHTML =str+str1+" ";
+
+        var str2 =$("#addTagP").text();
+        str2 = str2.trim();
+
+        gaTags=str2.split(' ');
+
+        document.getElementById('insertTag').value ="";
+        console.log(gaTags);
         $('#insertTag').focus();
+    });
+
+    $("button#subTag").click(function () {
+        gaTags.pop();
+        document.getElementById("addTagP").innerHTML="";
+        for(var s in gaTags)
+        {
+           document.getElementById("addTagP").innerHTML+= (gaTags[s]+" ");
+        }
+        console.log(gaTags);
+
     });
 });
 

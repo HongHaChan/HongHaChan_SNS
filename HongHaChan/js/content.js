@@ -205,12 +205,23 @@ xh.Bar = function() {
 };
 
 
-//TODO Hq
+var gaTags=[];
+
+//TODO LEE
 xh.Bar.prototype.insertTag_ = function() {
   function impl() {
-    var coma = ',';
     var str1 = document.getElementById("insertTag");
-    document.getElementById('insertTag').value = str1.value+coma+' ';
+
+    if(str1.value =='') return;
+
+    console.log(str1.value);
+    console.log(document.getElementById("addTagP"));
+
+    gaTags.push(str1.value);
+
+    document.getElementById("addTagP").innerHTML+=str1.value+" ";
+    document.getElementById('insertTag').value = "";//입력완료
+
     $('#insertTag').focus();
   }
   window.setTimeout(impl, 0);
@@ -281,13 +292,13 @@ xh.Bar.prototype.handleRequest_ = function(request, sender, cb) {
   } else if (request.type === 'toggleBar') {
     this.toggleBar_();
   }else if (request.type === 'insertTag') {
+    //TODO ENTER 눌렀을때 호출되는 부분 //Content.js랑 bar.js의 handleRequest
     this.insertTag_();
   }
 
    if(request.type === 'leftMove'){
       this.barFrame_.classList.remove('right');
       this.barFrame_.classList.add('left');
-
    }
 
    if(request.type === 'rightMove'){

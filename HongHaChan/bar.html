@@ -20,12 +20,12 @@
     <div data-role="header" data-position="fixed">
         <h1>HongHaChan Extension</h1>
 
-            <div data-role="navbar">
-                <ul class="tabs">
-                    <li rel="tab1"><a data-icon="user" class="taskSelectFunction ui-btn-active" id="SNS">SNS</a></li>
-                    <li rel="tab2"><a data-icon="navigation" class="taskSelectFunction" id="Custom">Custom</a></li>
-                </ul>
-            </div>
+        <div data-role="navbar">
+            <ul class="tabs">
+                <li rel="tab1"><a data-icon="user" class="taskSelectFunction ui-btn-active" id="SNS">SNS</a></li>
+                <li rel="tab2"><a data-icon="navigation" class="taskSelectFunction" id="Custom">Custom</a></li>
+            </ul>
+        </div>
     </div>
 
     <div data-role="navbar">
@@ -75,25 +75,26 @@
 
                     <br>
 
-
+                    <!-- TODO LEE -->
                     <div class="ui-body ui-body-a ui-corner-all action-box">
                         <form action="#" method="get">
                             <div data-role="fieldcontain" style="width: 100%;">
-                                <label for="tags">Insert Tags</label>
+                                <p for="tags" id="addTagP" align="center" style="font-size:140%;"> </p>
+
                                 <input type="text" name="insertTag" id="insertTag" class="insertTag"
                                        placeholder="Tag를 입력해주세요."/>
+                            </div>
 
-                                <!-- <button id="addTag" data-theme="e" data-icon="plus" data-mini="true" data-inline="true"
-                                align="right" style="margin-left:10px;">Add
-                                </button> -->
-                            </div>
-                            <div data-role="fieldcontain" style="width: 100%;" align="right">
-                                <div style="width: 100px">
-                                    <input type="button" class="addTag" id="addTag" data-theme="e" data-icon="plus"
-                                           value="Add">
-                                </div>
-                            </div>
                         </form>
+
+                        <fieldset class="ui-grid-a">
+                            <div class="ui-block-a">
+                                <button class="addTag" id="addTag" data-theme="e" data-icon="plus"  align="left">Add</button>
+                            </div>
+                            <div class="ui-block-b">
+                                <button class="addTag" id="subTag" data-theme="c" data-icon="minus"  align="right">Sub</button>
+                            </div>
+                        </fieldset>
                     </div>
 
 
@@ -143,7 +144,6 @@
 
 
     <div id="tab2" class="tab_content">
-
 
 
         <div data-role="content" data-theme="a">
