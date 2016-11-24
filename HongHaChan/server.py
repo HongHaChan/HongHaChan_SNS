@@ -26,7 +26,7 @@ cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 taskThreadList = []
 
-#TODO Seongha Schduler
+savePathName = "DataCollections/"
 
 def pendingSchedule():
     while True:
@@ -474,6 +474,12 @@ def parsingTags(targetText):
 
 def runInstagram(args):
 
+    pathName = savePathName+"instagram/"
+
+    #directory 없다면 생성한다.
+    if not os.path.exists(pathName):
+        os.makedirs(pathName)
+
     tags = args["tags"]
     formatCount = args["format"]["count"]
     formatType = args["format"]["type"]
@@ -499,6 +505,10 @@ def runInstagram(args):
 
     #Search Hashtag
     for curTag in tags:
+        pathNameCurTag = pathName + "#" + curTag;
+        if not os.path.exists(pathNameCurTag):
+            os.makedirs(pathNameCurTag)
+
         waitForElement(driver,"//*[@id='react-root']/section/nav/div/div/div/div[2]/input")
         driver.find_element_by_xpath("//*[@id='react-root']/section/nav/div/div/div/div[2]/input").send_keys("#" + curTag)
         time.sleep(1)
@@ -523,7 +533,8 @@ def runInstagram(args):
         #Save Text
         if (formatType[0] == 1):
             #f = open("#" + curTag + ".txt" , 'w+')
-            f = codecs.open("#" + curTag + "(instagram)" + ".txt", "wb", "utf-8")
+            f = codecs.open(pathNameCurTag + "/" + "#" + curTag + "(instagram)" + ".txt", "wb", "utf-8")
+
             for ele in elements:
                 f.write(str(elements.index(ele)+1) + " ")
                 curText = ele.find_element_by_xpath(".//*").get_attribute('alt')
@@ -531,13 +542,17 @@ def runInstagram(args):
             f.close()
 
         #Save Image
+        pathNameCurTagImg = pathNameCurTag+'/images';
+        if not os.path.exists(pathNameCurTagImg):
+            os.makedirs(pathNameCurTagImg)
+
         if(formatType[1] == 1):
             for ele in elements:
                 img_url = ele.find_element_by_xpath(".//*").get_attribute('src')
                 inputData = urlopen(img_url).read()
 
-                downloaded_image = "#" + curTag + str(elements.index(ele)+1) + "(instagram)" + ".jpg"
-                sf = open(downloaded_image, "wb")
+                downloaded_image = "/" + "#" + curTag + str(elements.index(ele)+1) + "(instagram)" + ".jpg"
+                sf = open(pathNameCurTagImg+downloaded_image, "wb")
                 sf.write(inputData)
                 sf.close()
 
@@ -560,12 +575,16 @@ def runInstagram(args):
                 "count": formatCount,
                 "data": dataList
             }
-            with open("#" + curTag + "(instagram)" + '.json', 'w') as f:
+            with open(pathNameCurTag + "/" + "#" + curTag + "(instagram)" + '.json', 'w') as f:
                 json.dump(targetData, f)  # 저정된 데이터는 다른 python 에서 실행이된다.
 
         print("[Instagram] #" + curTag + " End")
 
 def runFacebook(args):
+    pathName = savePathName+"facebook/"
+    if not os.path.exists(pathName):
+        os.makedirs(pathName)
+
     tags = args["tags"]
     formatCount = args["format"]["count"]
     formatType = args["format"]["type"]
@@ -597,6 +616,10 @@ def runFacebook(args):
 
     #Search Tags
     for curTag in tags:
+        pathNameCurTag = pathName + "#" + curTag;
+        if not os.path.exists(pathNameCurTag):
+            os.makedirs(pathNameCurTag)
+
         waitForElement(driver, '//*[@id="q"]')
         driver.find_element_by_xpath('//*[@id="q"]').send_keys("#" + curTag)
         time.sleep(1)
@@ -612,7 +635,7 @@ def runFacebook(args):
             elements = driver.find_elements_by_class_name("_5pbx")
             del elements[formatCount:]
 
-            f = codecs.open("#" + curTag + "(facebook)" + ".txt", "wb", "utf-8")
+            f = codecs.open(pathNameCurTag + "/" + "#" + curTag + "(facebook)" + ".txt", "wb", "utf-8")
             for ele in elements:
                 f.write(str(elements.index(ele) + 1) + " ")
                 curText = ele.text
@@ -620,9 +643,11 @@ def runFacebook(args):
                 f.write(curText + "\r\r\n\r\r\n")
             f.close()
 
-        # element1 = driver.find_elements_by_class_name('_5dec')[0].find_elements_by_xpath(".//*")[0]
-        # element1.find_elements_by_xpath(".//*")[0].get_attribute('src')
         # Save Image
+        pathNameCurTagImg = pathNameCurTag+'/images';
+        if not os.path.exists(pathNameCurTagImg):
+            os.makedirs(pathNameCurTagImg)
+
         if (formatType[1] == 1):
             while len(driver.find_elements_by_class_name("_5cq3")) <= formatCount:
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -636,8 +661,8 @@ def runFacebook(args):
                 img_url = ele.find_element_by_xpath(".//*//*//*").get_attribute('src')
                 inputData = urlopen(img_url).read()
 
-                downloaded_image = "#" + curTag + str(elements.index(ele) + 1) + "(facebook)" + ".jpg"
-                sf = open(downloaded_image, "wb")
+                downloaded_image = "/" + "#" + curTag + str(elements.index(ele) + 1) + "(facebook)" + ".jpg"
+                sf = open(pathNameCurTagImg + downloaded_image, "wb")
                 sf.write(inputData)
                 sf.close()
 
@@ -679,12 +704,16 @@ def runFacebook(args):
                 "count": formatCount,
                 "data": dataList
             }
-            with open("#" + curTag + "(facebook)" + '.json', 'w') as f:
+            with open(pathNameCurTag+"/" + "#" + curTag + "(facebook)" + '.json', 'w') as f:
                 json.dump(targetData, f)  # 저정된 데이터는 다른 python 에서 실행이된다.
 
         print("[Facebook] #" + curTag + " End")
 
 def runTwitter(args):
+    pathName = savePathName + "twitter/"
+    if not os.path.exists(pathName):
+        os.makedirs(pathName)
+
     tags = args["tags"]
     formatCount = args["format"]["count"]
     formatType = args["format"]["type"]
@@ -711,6 +740,10 @@ def runTwitter(args):
     #Search Tag
     isFirst = False
     for index, curTag in enumerate(tags):
+        pathNameCurTag = pathName + "#" + curTag;
+        if not os.path.exists(pathNameCurTag):
+            os.makedirs(pathNameCurTag)
+
         if(isFirst == False):
             isFirst = True
         else:
@@ -737,7 +770,7 @@ def runTwitter(args):
             elements = driver.find_elements_by_class_name('tweet')
             del elements[formatCount:]
 
-            f = codecs.open("#" + curTag + "(twitter)" + ".txt", "wb", "utf-8")
+            f = codecs.open(pathNameCurTag + "/" + "#" + curTag + "(twitter)" + ".txt", "wb", "utf-8")
             for ele in elements:
                 f.write(str(elements.index(ele) + 1) + " ")
                 curText = None
@@ -749,9 +782,11 @@ def runTwitter(args):
 
             f.close()
 
-        # element1 = driver.find_elements_by_class_name('_5dec')[0].find_elements_by_xpath(".//*")[0]
-        # element1.find_elements_by_xpath(".//*")[0].get_attribute('src')
         # Save Image
+        pathNameCurTagImg = pathNameCurTag + '/images';
+        if not os.path.exists(pathNameCurTagImg):
+            os.makedirs(pathNameCurTagImg)
+
         if (formatType[1] == 1):
             while len(driver.find_elements_by_class_name('AdaptiveMedia-photoContainer')) <= formatCount:
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -766,8 +801,8 @@ def runTwitter(args):
                     img_url = ele.get_attribute('data-image-url')
                     inputData = urlopen(img_url).read()
 
-                    downloaded_image = "#" + curTag + str(elements.index(ele) + 1) + "(twitter)" + ".jpg"
-                    sf = open(downloaded_image, "wb")
+                    downloaded_image = "/" + "#" + curTag + str(elements.index(ele) + 1) + "(twitter)" + ".jpg"
+                    sf = open(pathNameCurTagImg + downloaded_image, "wb")
                     sf.write(inputData)
                     sf.close()
                 except:
@@ -815,7 +850,7 @@ def runTwitter(args):
                 "count": formatCount,
                 "data": dataList
             }
-            with open("#" + curTag + "(twitter)" + '.json', 'w') as f:
+            with open(pathNameCurTag+"/" +"#" + curTag + "(twitter)" + '.json', 'w') as f:
                 json.dump(targetData, f)  # 저정된 데이터는 다른 python 에서 실행이된다.
 
         print("[Twitter] #" + curTag + " End")
